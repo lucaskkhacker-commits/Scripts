@@ -1,0 +1,209 @@
+-- SEGURANÇA E CARREGAMENTO
+repeat task.wait() until game:IsLoaded()
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+repeat task.wait() until LP.Character and LP:FindFirstChild("PlayerGui")
+
+-- --- CONFIGURAÇÕES GLOBAIS ---
+_G.AutoHitAtivo = true
+_G.EspAtivo = true
+_G.AutoHunt = false
+_G.SpeedAtivo = false
+_G.JumpAtivo = false
+_G.TPToolAtiva = false
+_G.SafeMode = false
+local ultimaVezPerto = tick()
+
+-- LIMPAR ANTIGOS
+if LP.PlayerGui:FindFirstChild("HJRS_MASTER_V2") then
+    LP.PlayerGui.HJRS_MASTER_V2:Destroy()
+end
+
+-- --- INTERFACE MASTER ---
+local sg = Instance.new("ScreenGui", LP.PlayerGui)
+sg.Name = "HJRS_MASTER_V2"
+sg.ResetOnSpawn = false
+
+local MainAnchor = Instance.new("Frame", sg)
+MainAnchor.Size = UDim2.new(0, 620, 0, 50)
+MainAnchor.Position = UDim2.new(0.5, -310, 0.1, 0)
+MainAnchor.BackgroundColor3 = Color3.new(0,0,0)
+MainAnchor.BackgroundTransparency = 0.5
+MainAnchor.Active = true 
+MainAnchor.Draggable = true 
+Instance.new("UICorner", MainAnchor).CornerRadius = UDim.new(0, 8)
+
+local ButtonHolder = Instance.new("Frame", MainAnchor)
+ButtonHolder.Size = UDim2.new(1, -50, 1, 0)
+ButtonHolder.Position = UDim2.new(0, 5, 0, 0)
+ButtonHolder.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout", ButtonHolder)
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.Padding = UDim.new(0, 4)
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local function createBtn(text, parent, sizeX)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(0, sizeX or 65, 0, 35)
+    b.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    b.Text = text; b.TextColor3 = Color3.new(1, 1, 1); b.TextScaled = true
+    b.Font = Enum.Font.GothamBold; b.ZIndex = 10
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+
+-- BOTÕES
+local HitBtn = createBtn("HIT: ON", ButtonHolder)
+HitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+local EspBtn = createBtn("ESP: ON", ButtonHolder)
+EspBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+local HuntBtn = createBtn("HUNT: OFF", ButtonHolder)
+local SpeedBtn = createBtn("SPD: OFF", ButtonHolder)
+local JumpBtn = createBtn("JMP: OFF", ButtonHolder)
+local TPBtn = createBtn("TP: OFF", ButtonHolder)
+local SafeBtn = createBtn("SAFE: OFF", ButtonHolder)
+
+local HuntBox = Instance.new("TextBox", ButtonHolder)
+HuntBox.Size = UDim2.new(0, 50, 0, 35); HuntBox.PlaceholderText = "Alvo"
+HuntBox.BackgroundColor3 = Color3.fromRGB(40,40,40); HuntBox.TextColor3 = Color3.new(1,1,1); HuntBox.TextScaled = true
+Instance.new("UICorner", HuntBox).CornerRadius = UDim.new(0, 6)
+
+local MiniBtn = createBtn("M", MainAnchor, 35)
+MiniBtn.Position = UDim2.new(1, -40, 0.5, -17); MiniBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+
+-- --- SISTEMA DE ESP (HIGHLIGHT) ---
+local function CriarEsp(player)
+    if player == LP then return end
+    local function Aplicar()
+        local char = player.Character or player.CharacterAdded:Wait()
+        if char:FindFirstChild("ESPHighlight") then char.ESPHighlight:Destroy() end
+        local h = Instance.new("Highlight", char)
+        h.Name = "ESPHighlight"; h.FillColor = Color3.new(1, 0, 0)
+        h.Enabled = _G.EspAtivo
+    end
+    Aplicar()
+    player.CharacterAdded:Connect(Aplicar)
+end
+
+local function AtualizarESPs()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("ESPHighlight") then
+            p.Character.ESPHighlight.Enabled = _G.EspAtivo
+        end
+    end
+end
+
+-- --- TP TOOL E SAFE MODE ---
+local function ManageTPTool()
+    local bp = LP:FindFirstChild("Backpack")
+    if not bp then return end
+    local old = bp:FindFirstChild("Click TP") or (LP.Character and LP.Character:FindFirstChild("Click TP"))
+    if _G.TPToolAtiva then
+        if not old then
+            local t = Instance.new("Tool")
+            t.Name = "Click TP"; t.RequiresHandle = false; t.Parent = bp
+            t.Activated:Connect(function()
+                local m = LP:GetMouse()
+                if m.Hit and LP.Character:FindFirstChild("HumanoidRootPart") then
+                    LP.Character.HumanoidRootPart.CFrame = CFrame.new(m.Hit.p) + Vector3.new(0, 3, 0)
+                end
+            end)
+        end
+    elseif old then old:Destroy() end
+end
+
+local SafePlatform = nil
+local function HandleSafeMode()
+    local char = LP.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if _G.SafeMode then
+        if not SafePlatform or not SafePlatform.Parent then
+            SafePlatform = Instance.new("Part", workspace)
+            SafePlatform.Size = Vector3.new(150, 1, 150); SafePlatform.Anchored = true
+            SafePlatform.Position = Vector3.new(8500, -397, 8500); SafePlatform.Color = Color3.new(1,0,0)
+        end
+        if root then root.CFrame = SafePlatform.CFrame + Vector3.new(0, 5, 0) end
+    else
+        if SafePlatform then SafePlatform:Destroy(); SafePlatform = nil end
+        if char and char:FindFirstChild("Humanoid") then char.Humanoid.Health = 0 end
+    end
+end
+
+-- --- CLIQUES ---
+local function Toggle(btn, varName, onText, offText)
+    _G[varName] = not _G[varName]
+    btn.Text = _G[varName] and onText or offText
+    btn.BackgroundColor3 = _G[varName] and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+end
+
+HitBtn.MouseButton1Click:Connect(function() Toggle(HitBtn, "AutoHitAtivo", "HIT: ON", "HIT: OFF") end)
+EspBtn.MouseButton1Click:Connect(function() Toggle(EspBtn, "EspAtivo", "ESP: ON", "ESP: OFF"); AtualizarESPs() end)
+HuntBtn.MouseButton1Click:Connect(function() Toggle(HuntBtn, "AutoHunt", "HUNT: ON", "HUNT: OFF") end)
+SpeedBtn.MouseButton1Click:Connect(function() Toggle(SpeedBtn, "SpeedAtivo", "SPD: ON", "SPD: OFF") end)
+JumpBtn.MouseButton1Click:Connect(function() Toggle(JumpBtn, "JumpAtivo", "JMP: ON", "JMP: OFF") end)
+TPBtn.MouseButton1Click:Connect(function() Toggle(TPBtn, "TPToolAtiva", "TP: ON", "TP: OFF"); ManageTPTool() end)
+SafeBtn.MouseButton1Click:Connect(function() Toggle(SafeBtn, "SafeMode", "SAFE: ON", "SAFE: OFF"); HandleSafeMode() end)
+
+MiniBtn.MouseButton1Click:Connect(function()
+    ButtonHolder.Visible = not ButtonHolder.Visible
+    MainAnchor.Size = ButtonHolder.Visible and UDim2.new(0, 620, 0, 50) or UDim2.new(0, 45, 0, 50)
+    MiniBtn.Text = ButtonHolder.Visible and "M" or "+"
+end)
+
+-- --- LOOP PRINCIPAL ---
+task.spawn(function()
+    while true do
+        pcall(function()
+            local char = LP.Character
+            local hum = char and char:FindFirstChild("Humanoid")
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local armaNome = "Claws"
+
+            if hum then
+                hum.WalkSpeed = _G.SpeedAtivo and 53 or 16
+                hum.JumpPower = _G.JumpAtivo and 78 or 50
+            end
+
+            -- Auto-Equip 50 Studs
+            local alvoPerto = false
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    if (root.Position - p.Character.HumanoidRootPart.Position).Magnitude < 50 then
+                        alvoPerto = true; ultimaVezPerto = tick(); break
+                    end
+                end
+            end
+            if alvoPerto then
+                local t = LP.Backpack:FindFirstChild(armaNome)
+                if t then hum:EquipTool(t) end
+            elseif tick() - ultimaVezPerto > 9 then
+                hum:UnequipTools()
+            end
+
+            -- Ataque
+            local tool = char:FindFirstChild(armaNome)
+            if _G.AutoHitAtivo and tool and tool:FindFirstChild("RemoteEvent") then
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LP and p.Character and (root.Position - p.Character.HumanoidRootPart.Position).Magnitude < 30 then
+                        tool.RemoteEvent:FireServer(p.Character, p.Character.Humanoid)
+                    end
+                end
+            end
+
+            -- Hunt
+            if _G.AutoHunt and HuntBox.Text ~= "" and root then
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LP and p.Name:lower():find(HuntBox.Text:lower()) then
+                        root.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                    end
+                end
+            end
+        end)
+        task.wait(0.12)
+    end
+end)
+
+for _, p in pairs(Players:GetPlayers()) do CriarEsp(p) end
+Players.PlayerAdded:Connect(CriarEsp)
