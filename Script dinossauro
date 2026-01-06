@@ -1,0 +1,152 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "DOC SIRIUS | HJRS MASTER V4",
+   LoadingTitle = "Injetando Protocolo God Mode...",
+   ConfigurationSaving = { Enabled = false }
+})
+
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local RS = game:GetService("ReplicatedStorage")
+
+-- REMOTES
+local AttackEvent = RS:WaitForChild("Events"):WaitForChild("InGame"):WaitForChild("Attack")
+local FXEvent = RS:WaitForChild("Events"):WaitForChild("FX")
+local RegenEvent = RS:WaitForChild("Events"):WaitForChild("InGame"):WaitForChild("RegenStam")
+local ConsumeEvent = RS:WaitForChild("Events"):WaitForChild("InGame"):WaitForChild("ConsumeStam")
+local FootstepEvent = RS:WaitForChild("Events"):WaitForChild("Replication"):WaitForChild("ReplicateFootstepSend")
+
+_G.KillActive = false
+_G.EspActive = false
+_G.StaminaHax = false
+_G.StealthSpeed = false
+_G.GodMode = false
+
+-- --- ABA COMBATE ---
+local CombatTab = Window:CreateTab("Combate")
+
+CombatTab:CreateToggle({
+   Name = "KILL (60 Studs)",
+   CurrentValue = false,
+   Callback = function(v) _G.KillActive = v end,
+})
+
+CombatTab:CreateToggle({
+   Name = "GOD MODE (Nulificar Dano)",
+   CurrentValue = false,
+   Callback = function(v) _G.GodMode = v end,
+})
+
+CombatTab:CreateToggle({
+   Name = "HIGHLIGHT (X-RAY)",
+   CurrentValue = false,
+   Callback = function(v) _G.EspActive = v end,
+})
+
+-- --- ABA STAMINA & SPEED ---
+local StaminaTab = Window:CreateTab("Stamina")
+
+StaminaTab:CreateToggle({
+   Name = "Stamina Infinita",
+   CurrentValue = false,
+   Callback = function(v) _G.StaminaHax = v end,
+})
+
+StaminaTab:CreateToggle({
+   Name = "Velocidade Natural (95)",
+   CurrentValue = false,
+   Callback = function(v) _G.StealthSpeed = v end,
+})
+
+-- --- LÓGICA DO GOD MODE (ESCANTEIO DE EVENTO) ---
+task.spawn(function()
+    while true do
+        task.wait() -- Sem delay para máxima proteção
+        if _G.GodMode then
+            pcall(function()
+                -- Envia o FX para confundir o servidor
+                FXEvent:FireServer("NIL", "NIL")
+                
+                -- Envia um ataque inválido em si mesmo (ou nulo) para bugar a detecção
+                local nullModel = Instance.new("Model")
+                AttackEvent:FireServer(nullModel, "NIL", "NIL", false)
+            end)
+        end
+    end
+end)
+
+-- --- LÓGICA DE VELOCIDADE STEALTH ---
+task.spawn(function()
+    while true do
+        task.wait()
+        if _G.StealthSpeed then
+            pcall(function()
+                local hum = LP.Character:FindFirstChild("Humanoid")
+                if hum and hum.MoveDirection.Magnitude > 0 then
+                    hum.WalkSpeed = 95
+                    FootstepEvent:FireServer()
+                elseif hum then
+                    hum.WalkSpeed = 16
+                end
+            end)
+        end
+    end
+end)
+
+-- --- LÓGICA DE STAMINA ---
+task.spawn(function()
+    while true do
+        task.wait(0.1) 
+        if _G.StaminaHax then
+            pcall(function()
+                RegenEvent:FireServer("100")
+                ConsumeEvent:FireServer("0.01")
+            end)
+        end
+    end
+end)
+
+-- --- LÓGICA DE KILL (60 STUDS) ---
+task.spawn(function()
+    while true do
+        task.wait(0.11)
+        if _G.KillActive then
+            pcall(function()
+                local myChar = LP.Character
+                local myDino = myChar.Name 
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (myChar.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                        if dist <= 60 then 
+                            AttackEvent:FireServer(p.Character, myDino, "BasicAttack", false)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- --- LÓGICA HIGHLIGHT (X-RAY) ---
+task.spawn(function()
+    while true do
+        if _G.EspActive then
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LP and p.Character then
+                    pcall(function()
+                        if not p.Character:FindFirstChild("HJRS_HL") then
+                            local hl = Instance.new("Highlight", p.Character)
+                            hl.Name = "HJRS_HL"
+                            hl.FillColor = Color3.fromRGB(255, 0, 0)
+                            hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                        end
+                    end)
+                end
+            end
+        end
+        task.wait(5)
+    end
+end)
+
+Rayfield:Notify({Title = "HJRS MASTER V4", Content = "Protocolo God Mode e Kill 60 Studs Prontos!", Duration = 5})
