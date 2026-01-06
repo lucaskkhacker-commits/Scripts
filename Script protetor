@@ -1,0 +1,55 @@
+-- [[ HJRS SYSTEM: PROTECTOR V1 (ANTÍDOTO tr.d) ]] --
+
+-- 1. NOTIFICAÇÃO INICIAL (MEIO DA TELA POR 5 SEGUNDOS)
+local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local txt = Instance.new("TextLabel", sg)
+txt.Size = UDim2.new(0, 400, 0, 50)
+txt.Position = UDim2.new(0.5, -200, 0.5, -25)
+txt.BackgroundTransparency = 1
+txt.Text = "SCRIPT DE PROTEÇÃO ATIVADO!"
+txt.TextColor3 = Color3.fromRGB(0, 255, 150)
+txt.TextScaled = true
+txt.Font = Enum.Font.GothamBold
+
+task.delay(5, function() sg:Destroy() end)
+
+-- 2. LÓGICA DE PROTEÇÃO (SILENCIOSA)
+_G.Protecting = true
+
+task.spawn(function()
+    while _G.Protecting do
+        pcall(function()
+            -- Limpeza de RAM: Esvazia tabelas globais que podem estar sendo usadas para injeção
+            -[span_0](start_span)[span_1](start_span)- Isso combate a lógica de table.insert(lixo_v26, ...)[span_0](end_span)[span_1](end_span)
+            for varName, value in pairs(_G) do
+                if type(value) == "table" and #value > 5000 then
+                    _G[varName] = {} -- Limpa tabelas de lixo massivo
+                end
+            end
+
+            -[span_2](start_span)- Proteção contra Spam de Som (rbxassetid://142376088 e outros)[span_2](end_span)
+            for _, obj in pairs(game.Workspace:GetDescendants()) do
+                if obj:IsA("Sound") and obj.Playing then
+                    obj:Stop()
+                    obj:Destroy()
+                end
+            end
+
+            -[span_3](start_span)- Proteção contra Spawn de Peças (Lógica de Crash/Lag)[span_3](end_span)
+            for _, obj in pairs(game.Workspace:GetChildren()) do
+                if obj:IsA("Part") and (obj.Name == "V26_BETA_STRESS" or obj.Size.Magnitude > 50) then
+                    obj:Destroy()
+                end
+            end
+            
+            -- Cancela Renderização de Sombras Pesadas (Protege a GPU do J7)
+            game:GetService("Lighting").GlobalShadows = false
+        end)
+        task.wait(2) -- Verifica a cada 2 segundos para não pesar no seu próprio J7
+    end
+end)
+
+-- 3. BYPASS DE DESLIGAMENTO (Tenta manter o script vivo)
+game:GetService("RunService").Stepped:Connect(function()
+    settings().Physics.PhysicsEnvironmentalThrottle = Enum.EnviromentalPhysicsThrottle.Disabled
+end)
