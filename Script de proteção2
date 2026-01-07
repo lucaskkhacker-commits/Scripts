@@ -1,0 +1,65 @@
+local function safe_run()
+    local lp = game:GetService("Players").LocalPlayer
+    if not lp then return end
+    
+    local pg = lp:FindFirstChild("PlayerGui")
+    if not pg then return end
+
+    local lighting = game:GetService("Lighting")
+    
+    -- PROTEÇÃO DE MEMÓRIA (LINHA 5 FIX)
+    pcall(function()
+        local r = string.rep
+        string.rep = function(s, c)
+            if c > 50000 then return "" end
+            return r(s, c)
+        end
+    end)
+
+    -- LOOP DE LIMPEZA (LINHA 25 FIX)
+    _G.Protecting = true
+    task.spawn(function()
+        while _G.Protecting do
+            pcall(function()
+                for i, v in pairs(_G) do
+                    if type(v) == "table" and i ~= "_G" then
+                        if #v > 500 then _G[i] = {} end
+                    end
+                end
+                for _, o in pairs(workspace:GetChildren()) do
+                    if o.Name == "V26_BETA_STRESS" or o:IsA("Sound") then
+                        o:Destroy()
+                    end
+                end
+                lighting.GlobalShadows = false
+            end)
+            task.wait(0.5)
+        end
+    end)
+
+    -- MENSAGEM (6 SEGUNDOS)
+    task.delay(3, function()
+        pcall(function()
+            local g = Instance.new("ScreenGui", pg)
+            local t = Instance.new("TextLabel", g)
+            t.AnchorPoint = Vector2.new(0.5, 0.5)
+            t.Position = UDim2.new(0.5, 0, 0.5, 0)
+            t.Size = UDim2.new(0, 250, 0, 60)
+            t.BackgroundColor3 = Color3.new(0, 0, 0)
+            t.BackgroundTransparency = 0.2
+            t.Text = "HJRS V4: PROTEGIDO"
+            t.TextColor3 = Color3.new(0, 1, 0.5)
+            t.TextScaled = true
+            t.Font = Enum.Font.GothamBold
+            Instance.new("UICorner", t).CornerRadius = UDim.new(0, 10)
+            task.wait(6)
+            g:Destroy()
+        end)
+    end)
+end
+
+-- TENTA EXECUTAR ATÉ CONSEGUIR (SEM DAR ERRO CRÍTICO)
+task.spawn(function()
+    while not game:GetService("Players").LocalPlayer do task.wait(1) end
+    safe_run()
+end)
