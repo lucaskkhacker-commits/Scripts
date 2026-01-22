@@ -1,0 +1,48 @@
+-- Lucas Hub: Auto-Attack (Creatures of Sonaria Edition)
+-- Sem interface, execução automática e simulador de velocidade real
+
+local player = game.Players.LocalPlayer
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local remote = replicatedStorage:WaitForChild("Remotes"):WaitForChild("CharactersDamageRemote")
+
+-- Configurações de Segurança/Realismo
+local alcanceDeAtaque = 25 -- Distância máxima para atacar (studs)
+local velocidadeAtaque = 0.94 -- Segundos entre cada mordida (ajustável)
+
+-- Função para achar o jogador mais próximo
+local function getClosestPlayer()
+    local closest = nil
+    local dist = alcanceDeAtaque
+    
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local magnitude = (player.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+            if magnitude < dist then
+                dist = magnitude
+                closest = v
+            end
+        end
+    end
+    return closest
+end
+
+-- Loop de Ataque Automático
+task.spawn(function()
+    while task.wait(velocidadeAtaque) do
+        pcall(function()
+            local target = getClosestPlayer()
+            
+            if target and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                -- O Remote que você forneceu
+                local args = {
+                    {
+                        Instance.new("Model", nil)
+                    }
+                }
+                
+                -- Dispara o ataque no Remote do jogo
+                remote:FireServer(unpack(args))
+            end
+        end)
+    end
+end)
