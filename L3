@@ -1,0 +1,45 @@
+-- Lucas Hub: CoS Auto-Attack (Full pcall Version)
+-- Sem interface, execução silenciosa
+
+task.spawn(function()
+    while task.wait(0.94) do -- Velocidade de ataque segura
+        pcall(function()
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+
+            local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes") 
+                and game:GetService("ReplicatedStorage").Remotes:FindFirstChild("CharactersDamageRemote")
+
+            if not remote then return end
+
+            -- Procura o alvo mais próximo com proteção pcall
+            local target = nil
+            local shortestDist = 25 -- Alcance de mordida realista
+
+            pcall(function()
+                for _, v in pairs(game.Players:GetPlayers()) do
+                    if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                        local dist = (character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+                        if dist < shortestDist then
+                            shortestDist = dist
+                            target = v
+                        end
+                    end
+                end
+            end)
+
+            -- Dispara o Remote se houver alvo, com proteção pcall
+            if target then
+                pcall(function()
+                    local args = {
+                        {
+                            Instance.new("Model", nil)
+                        }
+                    }
+                    remote:FireServer(unpack(args))
+                end)
+            end
+        end)
+    end
+end)
